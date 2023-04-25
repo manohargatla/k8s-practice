@@ -61,7 +61,7 @@ systemctl enable --now cri-docker.socket
 ```
 ![preview](images/k8s5.png)
 ![preview](images/k8s5.1.png)
-* Refer here for commands to install kubeadm,kubctl,kubelet `https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/`
+* Refer here for commands to install kubeadm,kubctl,kubelet url@https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 * Run these commands as root user `sudo apt-get update
 * sudo apt-get install -y apt-transport-https ca-certificates curl`
 * `sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg`
