@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: spc-app
+spec:
+  containers:
+    - name: spc
+      image: manugatla/spring-petclinic:latest
+      ports:
+        - containerPort: 8080
+---

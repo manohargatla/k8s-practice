@@ -1,7 +1,9 @@
+## Date:25/04/2023
 ## Kubernetes (K8s)
 * The shortform of k8s is came from the charachters between the kubernetes of (K-s)
 ## Definition of kubernetes
 * Kubernetes is a portable, extensible, open source platform for managing containerized workloads and services, that facilitates both declarative configuration and automation. It has a large, rapidly growing ecosystem. Kubernetes services, support, and tools are widely available.
+* Kubernetes lets you create, deploy, manage, and scale application containers across one or more host clusters.
 ## Need for K8s
   ## High Availability (HA):
 * When we run our applications in docker container and if the container fails, we need to manually start the container.
@@ -84,3 +86,151 @@ sudo apt-mark hold kubelet kubeadm kubectl`
 ![preview](images/k8s9.png)
 * In master node run `kubectl get nodes -w`
 * ![preview](images/k8s10.png)
+
+## Date:26/04/2023
+
+## Day-1 k8s tasks
+## 1) Write a Pod Spec for Spring PetClinic and nopCommerce Applications
+
+## Spring-petclinic
+* First create kubernetes Pod spec or manifest.
+```yaml
+---
+apiVersion: V1
+kind: Pod
+metadata:
+  name: spc1-app
+spec:
+  containers:
+    - name: spc
+      image: manugatla/spring-petclinic
+      ports:
+        - containerPort: 8080
+```
+## Nopcommerce
+* First create kubernetes Pod spec or manifest.
+```yaml
+---
+apiVersion: V1
+kind: Pod
+metadata:
+  name: nop-app
+spec:
+  containers:
+    - name: spc
+      image: manugatla/nopcommerce
+      ports:
+        - containerPort: 8080
+```
+## 2) Execute the kubectl commands:
+## For Spring-petclinic
+* To create a Pod we have to use command as `kubectl apply -f springpetclinic.yaml`
+* To know the pod is created or not, run this command `kubectl get pods/po`
+* To describe the Pod, run this command `kubectl describe pod spc1-app ==> <name of pod>`
+![preview](images/k8s-spc-11.png)
+## For Nopcommerce
+* To create a Pod we have to use command as `kubectl apply -f nopcommerce.yaml`
+* To know the pod is created or not, run this command `kubectl get pods/po`
+* To describe the Pod, run this command `kubectl describe pod nop-app ==> <name of pod>`
+![preview](images/k8s-nop-12.png)
+
+## Date:27/04/2023
+
+## Day-2 k8s tasks
+
+# Explain Kubernetes architecture
+* Kubernetes is an architecture that offers a loosely coupled mechanism for service discovery across a cluster. A Kubernetes cluster has one or more control planes, and one or more compute nodes.
+* Environments running Kubernetes consist of the following key components:
+* Control plane:It manges the k8s clusters and Workloads and it has componetns like API server,Schedular and control manger
+  * API Server:It servers as front end for k8s to communicate with control plane componets and worker nodes and handling external and internal request.
+  * Schedular:This component is responsible for scheduling pods on specific nodes according to automated workflows.
+  * Control manger:The Kubernetes controller manager is a control loop that monitors and regulates the state of a Kubernetes cluster.
+  * etcd:It is component in control plane which stores the data of cluster state and configuration.
+  * cloud-controller-manager:This component can embed cloud-specific control logic - for example, it can access the cloud provider’s load balancer service.
+* Worker nodes:
+  * Nodes: Nodes are physical or virtual machines that can run pods as part of a Kubernetes cluster. A cluster can scale up to 5000 nodes. 
+  * Pods: A pod serves as a single application instance, and is considered the smallest unit in the object model of Kubernetes.
+  * kubelet: Each node contains a kubelet, which is a small application that can communicate with the Kubernetes control plane.
+  * kube-proxy:It handles all network communications outside and inside the cluster, forwarding traffic or replying on the packet filtering layer of the operating system.
+![preview](images/k8s1.png)
+# Setup k8s on single node using minikube and kind
+# Minikube Installation
+* Requirements for installation of Minikube
+  * 2 CPUs or more.
+  * 2GB of free memory.
+  * 20GB of free disk space.
+  * Internet connection.
+  * Container or virtual machine manager, such as: Docker
+# Steps
+* Install Docker 
+![preview](images/k8s-minikube-spc-14.png)
+![preview](images/k8s-minikube-spc-15.png)
+![preview](images/k8s-minikube-spc-16.png)
+* Install Minikube Refer here url@https://minikube.sigs.k8s.io/docs/start/ 
+* Run below commands to install Minikube
+* `curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64`
+* `sudo install minikube-linux-amd64 /usr/local/bin/minikube`
+* Start your cluster use below command
+* `minikube start`
+![preview](images/k8s-minikube-spc-17.png)
+* To Interact with your cluster use below commands
+* If you already have kubectl installed, you can now use it to access your shiny new cluster use this command `kubectl get po -A`
+* If not use `minikube kubectl -- get po -A` to easy way of using this command you need to use `alias kubectl="minikube kubectl --"`
+![preview](images/k8s-minikube-spc-18.png)
+* some services such as the storage-provisioner, may not yet be in a Running state. This is a normal condition during cluster bring-up, and will resolve itself momentarily. For additional insight into your cluster state, minikube bundles the Kubernetes Dashboard, allowing you to get easily acclimated to your new environment:
+* `minikube dashboard` to exit from Dashboard use `CTRL+C`
+* To Deploy applications
+* Create a Spring-petclinic application deployment and expose it on port 8080.
+* `kubectl create deployment spc-minikube --image=manugatla/spring-petclinic`
+* `kubectl expose deployment spc-minikube --type=NodePort --port=8080`
+* `kubectl get services spc-minikube`
+* To Port forwarding use command `kubectl port-forward --address "0.0.0.0" service/spc-minikube 7081:8080` then to access application ` http://localhost:7081/.` localhost => Public ip
+![preview](images/k8s-minikube-spc-19.png)
+![preview](images/k8s-minikube-spc-13.png)
+# Kind Installation
+* Requirements for installation of Minikube
+  * 2 CPUs or more.
+  * 2GB of free memory.
+  * 20GB of free disk space.
+  * Internet connection.
+  * Container or virtual machine manager, such as: Docker
+  * 6GB of RAM dedicated to the virtual machine (VM) running the Docker engine. 
+# Steps
+* Install Docker 
+* To install kind on linux ubuntu use below commands and refer here for more details url@https://kind.sigs.k8s.io/docs/user/quick-start/
+* `curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.18.0/kind-linux-amd64`
+* `chmod +x ./kind`
+* `sudo mv ./kind /usr/local/bin/kind`
+![preview](images/k8s-kind-spc-20.png)
+* To create cluster in Kind use `kind create cluster`
+![preview](images/k8s-kind-spc-21.png)
+* To create Pods in kind use below commands
+* First create a manifest file then apply commands 
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: spc-app
+spec:
+  containers:
+    - name: spc
+      image: manugatla/spring-petclinic:latest
+      ports:
+        - containerPort: 8080
+```
+* `kubectl apply -f <spc.yaml>
+* To see the pods
+* `kubect get pods`
+![preview](images/k8s-kind-spc-22.png)
+* 
+# Run the Spring Pet Clinic
+# Deployed application in Minikube
+* Create a Spring-petclinic application deployment and expose it on port 8080.
+* `kubectl create deployment spc-minikube --image=manugatla/spring-petclinic`
+* `kubectl expose deployment spc-minikube --type=NodePort --port=8080`
+* `kubectl get services spc-minikube`
+* To Port forwarding use command `kubectl port-forward --address "0.0.0.0" service/spc-minikube 7081:8080` 
+* To access application` http://localhost:7081/.` localhost => Public ip
+![preview](images/k8s-minikube-spc-19.png)
+![preview](images/k8s-minikube-spc-13.png)
+

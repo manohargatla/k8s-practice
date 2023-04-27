@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nop-app
+spec:
+  containers:
+    - name: spc
+      image: manugatla/nopcommerce
+      ports:
+        - containerPort: 5000
