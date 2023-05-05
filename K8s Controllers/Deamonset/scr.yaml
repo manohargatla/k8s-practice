@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: scr-deamons
+  labels:
+    app: scr
+spec:
+  minReadySeconds: 2
+  selector:
+    matchLabels:
+      app: scr
+  template:
+    metadata:
+      name: scr-pod
+      labels:
+        app: scr
+    spec:
+      containers:
+        - name: scr-app
+          image: manugatla/studentcourse
+          ports:
+            - containerPort: 80
+          nodeSelector:
+            
+          

@@ -1,0 +1,49 @@
+## labels and selectors
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata: 
+  name: nop-rs
+  labels:
+    app: nopcommerce
+  annotations:
+    client: manu
+    contact: "000000000"
+spec:
+  minReadySeconds: 1
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nopcommerce
+  template:
+    metadata:
+      name: nop-spec
+      labels:
+        app: nopcommerce
+      annotations:
+        client: manu
+        contact: "000000000"
+    spec:
+      containers:
+        - name: nop
+          image: manugatla/nopcommerce
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+---
+## service file for nop-commerce
+apiVersion: v1
+kind: Service
+metadata:
+  name: nop-svc
+spec:
+  selector:
+    app: nopcommerce
+  type: ClusterIP
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 5000
+    
+        
+    
+        

@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: replicaset
+spec:
+  minReadySeconds: 1
+  replicas: 3
+  selector: 
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      name: jenkins-pod
+      labels:
+        app: jenkins
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:jdk11
+          ports:
+            - containerPort: 8080
+          command: ["sleep","5s"]
+---
+## nginx replication controller with 3 pods
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: replicaset-controller
+spec:
+  minReadySeconds: 2
+  replicas: 5
+  selector:
+    app: spc
+  template:
+    metadata:
+      name: spc-template
+      labels: 
+        app: spc
+    spec: 
+      restartPolicy: Always
+      containers:
+        - name: spc-pod
+          image: manugatla/spring-petclinic
+          ports:
+            - containerPort: 8080
+---
+          
+
+

@@ -29,6 +29,22 @@ Zero-Down time Deployments
     * AKS
     * EKS
     * GKE
+* Clients
+    * kubectl
+    * any rest based client
+## IMP-k8s terms
+   * **Distributed System:**Also known as distributed computing and distributed databases, a distributed system is a collection of independent components located on different machines that share messages with each other in order to achieve common goals.
+   * **Node:**A Node is a worker machine in Kubernetes and may be either a virtual or a physical machine, depending on the cluster. Each Node is managed by the control plane. A Node can have multiple pods, and the Kubernetes control plane automatically handles scheduling the pods across the Nodes in the cluster.
+   * A node is a basic unit of a data structure, such as a linked list or tree data structure. Nodes contain data and also may link to other nodes. Links between nodes are often implemented by pointers.
+   * **Cluster:**A Kubernetes cluster is a set of nodes that run containerized applications. Containerizing applications packages an app with its dependences and some necessary services. They are more lightweight and flexible than virtual machines.
+   * **State:**There are three possible container states: Waiting , Running , and Terminated . To check the state of a Pod's containers, you can use kubectl describe pod <name-of-pod> . The output shows the state for each container within that Pod.
+   * **Stateful Applications:**Stateful applications save data to persistent disk storage for use by the server, by clients, and by other applications. An example of a stateful application is a database or key-value store to which data is saved and retrieved by other applications.
+   ***Stateless application:** A stateless application is one which depends on no persistent storage. The only thing your cluster is responsible for is the code, and other static content, being hosted on it. That's it, no changing databases, no writes and no left over files when the pod is deleted.
+   * **Monolith:**A monolithic application is constructed as one unit which means it's composed all in one piece. The Monolithic application describes a one-tiered software application within which different components combined into one program from a single platform.
+   * **Microservices:**A microservice is a software design pattern. It's something developers get excited about. They are related, but do not require each other. You can have a monolith deployed as a container, or you can have an unrestricted, non-containerized microservice.
+   * **Desired State:**A desired state is defined by configuration files made up of manifests, which are JSON or YAML files that declare the type of application to run and how many replicas are required to run a healthy system. The cluster's desired state is defined with the Kubernetes API(application programming interface).
+   * **Declarative vs Imperative:**Imperative configuration involves creating Kubernetes resources directly at the command line against a Kubernetes cluster. Declarative configuration defines resources within manifest files and then applies those definitions to the cluster.
+   *** Pet Vs Cattle:**Servers in on-premises data centers are generally viewed as “pets”, whereas servers in the cloud are considered “cattle”. Pets are indispensable servers where you can make configuration changes should problems arise While, Cattle are servers that can be deleted and rebuilt from scratch in case of failures.
 ## Kube-admin Installation
 * Initially k8s used docker as a main container platform and docker used to get special treatment, from k8s 1.24 special treatment is stopped.
 * k8s is designed to run any container technology, for this k8s expects container technology to follow k8s interfaces.
@@ -38,6 +54,9 @@ Zero-Down time Deployments
 * ![preview](images/k8s2.png)
 * Installation method (kubeadm) which is something we will be using in on-premises k8s.
 * Install docker in all the nodes.
+* ` curl -fsSL https://get.docker.com -o get-docker.sh`
+* `sh get-docker.sh`
+* `sudo usermod -aG docker ubuntu` exit and relogin
 * ![preview](images/k8s3.png)
 * ![preview](images/k8s4.png)
 * Install CRI-DOCKER in all the nodes, run the commands as root user.
@@ -86,12 +105,55 @@ sudo apt-mark hold kubelet kubeadm kubectl`
 ![preview](images/k8s9.png)
 * In master node run `kubectl get nodes -w`
 * ![preview](images/k8s10.png)
+## Kubernetes Objects
+* Every thing in k8s is an object.
+* Every object has a spec and status
+* spec: specification (what we have asked)
+* status: (what was created)
+## Resources in manifest
+* To define a resource in a manifest file we create a yaml file with following structure
+  * apiVersion: 
+  * kind:
+  * metadata:
+  * spec:
+## Kubernetes Objects
+* Kubernetes objects are persistent entities in the Kubernetes system. Kubernetes uses these entities to represent the state of your cluster. Specifically, they can describe:
+  * What containerized applications are running (and on which nodes)
+  * The resources available to those applications
+  * The policies around how those applications behave, such as restart policies, upgrades, and fault-tolerance
+* A Kubernetes object is a "record of intent"--once you create the object, the Kubernetes system will constantly work to ensure that object exists. By creating an object, you're effectively telling the Kubernetes system what you want your cluster's workload to look like; this is your cluster's desired state.
+## Kubernetes API
+* The REST API is the fundamental fabric of Kubernetes. All operations and communications between components, and external user commands are REST API calls that the API Server handles. Consequently, everything in the Kubernetes platform is treated as an API object and has a corresponding entry in the API.
+* The core of Kubernetes' control plane is the API server. The API server exposes an HTTP API that lets end users, different parts of your cluster, and external components communicate with one another.
+* The Kubernetes API lets you query and manipulate the state of API objects in Kubernetes (for example: Pods, Namespaces, ConfigMaps, and Events).By default, the Kubernetes API server listens on port 6443 on the first non-localhost network interface, protected by TLS.
+* Controlling Access to the Kubernetes API
+![preview](images/k8s33.png)
+## Pods
+* Pods are the smallest deployable units of computing that you can create and manage in Kubernetes.
+* A Pod (as in a pod of whales or pea pod) is a group of one or more containers, with shared storage and network resources, and a specification for how to run the containers.
+* To create a pod use below commands
+  ```
+  kubectl apply -f
+  kubectl get <api-resource>
+  kubectl describe <kind> <name>
+  ```
+*  To view the complete manifest created by k8s `kubectl get <kind> <name> -o yaml`
+## Pod lifecycle
+* K8s Pods will have following states
+  * **Pending:** The Pod has been accepted by the Kubernetes cluster, but one or more of the containers has not been set up and made ready to run. This includes time a Pod spends waiting to be scheduled as well as the time spent downloading container images over the network.
+  * **Running:** The Pod has been bound to a node, and all of the containers have been created. At least one container is still running, or is in the process of starting or restarting.
+  * **Succeded:** All containers in the Pod have terminated in success, and will not be restarted.
+  * **Failed:** All containers in the Pod have terminated, and at least one container has terminated in failure. That is, the container either exited with non-zero status or was terminated by the system.
+  * **Unknown:** For some reason the state of the Pod could not be obtained. This phase typically occurs due to an error in communicating with the node where the Pod should be running.
+## Container States in k8s pod
+  * **Waiting:** If a container is not in either the Running or Terminated state, it is Waiting. A container in the Waiting state is still running the operations it requires in order to complete start up: for example, pulling the container image from a container image registry, or applying Secret data. When you use kubectl to query a Pod with a container that is Waiting, you also see a Reason field to summarize why the container is in that state.
+  * **Running:** The Running status indicates that a container is executing without issues. If there was a postStart hook configured, it has already executed and finished. When you use kubectl to query a Pod with a container that is Running, you also see information about when the container entered the Running state.
+  * **Terminated:**
 
 ## Date:26/04/2023
 
 ## Day-1 k8s tasks
 ## 1) Write a Pod Spec for Spring PetClinic and nopCommerce Applications
-
 ## Spring-petclinic
 * First create kubernetes Pod spec or manifest.
 ```yaml
@@ -234,3 +296,198 @@ spec:
 ![preview](images/k8s-minikube-spc-19.png)
 ![preview](images/k8s-minikube-spc-13.png)
 
+## Date:28/04/2023
+
+## Day-3 k8s activities
+
+## K8s manifest by using api-service "restartpolicy"
+* The spec of a Pod has a restartPolicy field with possible values Always, OnFailure, and Never. The default value is Always.
+* The restartPolicy applies to all containers in the Pod. restartPolicy only refers to restarts of the containers by the kubelet on the same node. After containers in a Pod exit, the kubelet restarts them with an exponential back-off delay (10s, 20s, 40s, …), that is capped at five minutes.
+## Restart always
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: always-restart
+spec:
+  restartPolicy: Always
+  containers:
+    - name: always
+      image: manugatla/spring-petclinic
+      ports:
+        - containerPort: 8080
+      command: ["sleep","10s"]
+```
+commands to execute
+* `kubectl apply -f restartalways.yaml`
+* To get pods use `kubectl get po -w`
+![preview](images/k8s-RST-always-26.png)
+
+## Restart Onfailure
+```yaml
+# Restart Onfailure code -failure
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: onfailure-restart
+spec:
+  restartPolicy: OnFailure
+  containers:
+    - name: failure
+      image: manugatla/spring-petclinic
+      ports:
+        - containerPort: 8080
+      command: ["sleep","1sm"]
+```
+commands to execute
+* `kubectl apply -f restartonfailure.yaml`
+* To get pods use `kubectl get po -w`
+![preview](images/k8s-RST-onfailure-27.png)
+```yaml
+# Restart Onfailure code -success
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: onfailure-restart-1
+spec:
+  restartPolicy: OnFailure
+  containers: 
+    - name: success
+      image: manugatla/spring-petclinic
+      ports:
+        - containerPort: 8080
+      command: ["sleep","10s"]
+```
+commands to execute
+* `kubectl apply -f restartonfailure1.yaml`
+* To get pods use `kubectl get po -w`
+![preview](images/k8s-RST-onfailure-28.png)
+## Restart never
+```yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: never-restart
+spec:
+  restartPolicy: Never
+  containers:
+    - name: always
+      image: manugatla/spring-petclinic
+      ports:
+        - containerPort: 8080
+      command: ["sleep","10s"]
+```
+commands to execute
+* `kubectl apply -f restartnever.yaml`
+* To get pods use `kubectl get po -w`
+![preview](images/k8s-RST-never-29.png)
+## Jobs
+* A Job creates one or more Pods and will continue to retry execution of the Pods until a specified number of them successfully terminate. As pods successfully complete, the Job tracks the successful completions.
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-intro
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      name: spc
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: alpine
+          image: alpine
+          ports:
+            - containerPort: 8080
+          command:
+            - sleep
+            - 10s
+```
+commands to execute
+* `kubectl apply -f jobs.yaml`
+* To get jobs use `kubectl get jobs -w`
+* To get pods use `kubectl get po -w`
+![preview](images/k8s-jobs-23.png)
+## Cronjob
+* CronJob is meant for performing regular scheduled actions such as backups, report generation, and so on. 
+```yaml
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata: 
+  name: cornjob
+spec:
+  schedule: '* * * * *'
+  jobTemplate:
+    metadata:
+      name: create data
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          name: to create containers
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: jenkins
+              image: jenkins/jenkins:jdk11
+              ports:
+                - containerPort: 8080
+              command: ["sleep","10s"]
+            - name: nginx
+              image: nginx:1.24
+              ports:
+                - containerPort: 80
+              command: ["sleep","10s"]
+```
+commands to execute
+* `kubectl apply -f cornjobs.yaml`
+* To get cronjobs use `kubectl get cornjobs` or `kubectl get cornjobs.batch`
+![preview](images/k8s-cronjobs-24.png)
+* To get pods use `kubectl get jobs -w`
+![preview](images/k8s-cronjobs-25.png)
+## Replicaset
+* A ReplicaSet's purpose is to maintain a stable set of replica Pods running at any given time. As such, it is often used to guarantee the availability of a specified number of identical Pods.
+```yaml
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: replicaset
+spec:
+  minReadySeconds: 1
+  replicas: 3
+  selector: 
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      name: jenkins-pod
+      labels:
+        app: jenkins
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:jdk11
+          ports:
+            - containerPort: 8080
+          command: ["sleep","5s"]
+```
+commands to execute
+* `kubectl apply -f jenkins-rs.yaml`
+* To get replicasets use `kubectl get rs -w`
+* To get pods use `kubectl get po -w`
+![preview](images/k8s-Replicaset-30.png)
+![preview](images/k8s-Replicaset-31.png)
+
+## Date:05/05/2023
+* Create a MySQL pod with Stateful Set with 1 replica
+* Create a nopCommerce deployment with 1 replica
+* Create a Headless Service to interact with nopCommerce with MySQL 
+* Create a Load Balancer to expose the nopCommerce to External World 
+* Try to draw the Architecture Diagram for the above by using Draw.io Tool.

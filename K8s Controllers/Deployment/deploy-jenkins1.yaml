@@ -1,0 +1,49 @@
+## Jenkins deploy by using deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins1
+  labels:
+    tool: jenkins
+spec:
+  minReadySeconds: 2
+  replicas: 2
+  selector:
+    matchLabels:
+      tool: jenkins
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      name: jenkins-pod
+      labels:
+        tool: jenkins
+    spec:
+      containers:
+        - name: jenkins
+          image: manugatla/jenkins
+          resources:
+            requests:
+              memory: "1000Mi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 8080
+          command: ["/usr/bin/jenkins"]
+---
+## service file for jenkins
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-svc1
+spec:
+  selector:
+    tool: jenkins
+  type: LoadBalancer
+  ports:
+    - port: 8088
+      protocol: TCP
+      targetPort: 8080
+---

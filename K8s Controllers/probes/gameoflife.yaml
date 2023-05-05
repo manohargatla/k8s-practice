@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: gol-rs
+  labels:
+    app: gol
+spec:
+  minReadySeconds: 1
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gol
+  template:
+    metadata:
+      name: gol-pod
+      labels:
+        app: gol
+    spec:
+      containers:
+        - name: gol-app
+          image: manugatla/gameoflife
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            successThreshold: 2
+            failureThreshold: 2
+            timeoutSeconds: 1
+            httpGet:
+              path: /
+              port: 8080
+          readinessProbe:
+            successThreshold: 2
+            failureThreshold: 2
+            timeoutSeconds: 1
+            exec:
+              command:
+                - sleep
+                - 3s
+---
+## service file
+apiVersion: v1
+kind: Service
+metadata:
+  name: gol-svc
+spec:
+  selector:
+    app: gol
+  type: ClusterIP
+  ports:
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+    

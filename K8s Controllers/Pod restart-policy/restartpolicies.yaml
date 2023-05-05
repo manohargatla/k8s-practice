@@ -1,0 +1,61 @@
+## Restart always 
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: always-restart
+spec:
+  restartPolicy: Always
+  containers:
+    - name: always
+      image: manugatla/spring-petclinic
+      ports:
+        - containerPort: 8080
+      command: ["sleep","10s"]
+---
+## Restart Onfailure
+# Restart Onfailure code -failure
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: onfailure-restart
+spec:
+  restartPolicy: OnFailure
+  containers:
+    - name: failure
+      image: manugatla/spring-petclinic
+      ports:
+        - containerPort: 8080
+      command: ["sleep","1sm"]
+---
+# Restart Onfailure code -success
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: onfailure-restart-1
+spec:
+  restartPolicy: OnFailure
+  containers: 
+    - name: success
+      image: manugatla/spring-petclinic
+      ports:
+        - containerPort: 8080
+      command: ["sleep","10s"]
+---
+## Restart never
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: never-restart
+spec:
+  restartPolicy: Never
+  containers:
+    - name: always
+      image: manugatla/spring-petclinic
+      ports:
+        - containerPort: 8080
+      command: ["sleep","10s"]
+---

@@ -6,7 +6,9 @@ metadata:
 spec:
   containers:
     - name: spc
-      image: manugatla/nopcommerce
+      image: manugatla/gameoflife
       ports:
         - containerPort: 5000
+      env:
+        purpose: test
 ---

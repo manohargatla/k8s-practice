@@ -1,0 +1,51 @@
+## Jobs
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-intro
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      name: spc
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: alpine
+          image: alpine
+          ports:
+            - containerPort: 8080
+          command:
+            - sleep
+            - 10s
+---
+## Cronjob
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata: 
+  name: cornjob
+spec:
+  schedule: '* * * * *'
+  jobTemplate:
+    metadata:
+      name: create data
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          name: to create containers
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: jenkins
+              image: jenkins/jenkins:jdk11
+              ports:
+                - containerPort: 8080
+              command: ["sleep","10s"]
+            - name: nginx
+              image: nginx:1.24
+              ports:
+                - containerPort: 80
+              command: ["sleep","10s"]
+---
