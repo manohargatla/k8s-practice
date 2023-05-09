@@ -1,0 +1,72 @@
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: alpine
+# spec:
+#   containers:
+#     - name: alpine
+#       image: alpine
+#       args:
+#         - sleep
+#         - 1d
+#       volumeMounts:
+#         - name: sqlvolume
+#           mountPath: /manu
+#   volumes:
+#     - name: sqlvolume
+#       emptyDir:
+#         sizeLimit: 100Mi      
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: alpinedb
+spec:
+  minReadySeconds: 1
+  serviceName: alpine
+  replicas: 1
+  selector:
+    matchLabels:
+      db: alpine
+  template:
+    metadata:
+      name: alpine
+      labels:
+        db: alpine
+    spec:
+      containers:
+        - name: alpine
+          image: alpine
+          volumeMounts:
+            - name: sqlvolume
+              mountPath: /alpine
+  volumeClaimTemplates:
+    - metadata:
+        name: sqlvolume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        selector:
+          matchLabels:
+            db: alpine
+        storageClassName: managed
+        resources:
+          requests:
+            storage: 1Gi      
+---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: mysql
+# spec:
+#   type: ClusterIP
+#   selector:
+#     db: mysql
+#   ports:
+#     - port: 4500
+#       protocol: TCP
+#       targetPort: 3306
+  
+        
+

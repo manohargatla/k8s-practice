@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysqldb
+spec:
+  minReadySeconds: 1
+  serviceName: mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      db: mysql
+  template:
+    metadata:
+      name: mysqlpod
+      labels:
+        db: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: manuroot
+            - name: MYSQL_USER
+              value: gmanohar
+            - name: MYSQL_PASSWORD
+              value: manu1234
+            - name: MYSQL_DATABASE
+              value: students
+          volumeMounts:
+            - name: sqlvolume
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: sqlvolume
+          emptyDir:
+              sizeLimit: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  type: ClusterIP
+  selector:
+    db: mysql
+  ports:
+    - port: 3300
+      protocol: TCP
+      targetPort: 3306

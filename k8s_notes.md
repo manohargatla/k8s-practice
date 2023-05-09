@@ -487,7 +487,311 @@ commands to execute
 
 ## Date:05/05/2023
 * Create a MySQL pod with Stateful Set with 1 replica
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysqldb
+spec:
+  minReadySeconds: 1
+  serviceName: mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      db: mysql
+  template:
+    metadata:
+      name: mysqlpod
+      labels:
+        db: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: manuroot
+            - name: MYSQL_USER
+              value: gmanohar
+            - name: MYSQL_PASSWORD
+              value: manu1234
+            - name: MYSQL_DATABASE
+              value: students
+          volumeMounts:
+            - name: sqlvolume
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: sqlvolume
+          emptyDir:
+              sizeLimit: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  type: ClusterIP
+  selector:
+    db: mysql
+  ports:
+    - port: 3300
+      protocol: TCP
+      targetPort: 3306
+```
+![preview](images/k8s35.png)
 * Create a nopCommerce deployment with 1 replica
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nopdeploy
+  labels:
+    app: nop
+spec:
+  minReadySeconds: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nop
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      name: noppod
+      labels:
+        app: nop
+    spec:
+      containers:
+        - name: nopcommerce
+          image: manugatla/nopcommerce
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MYSQL_SERVER
+              value: mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nopsvc
+spec:
+  type: LoadBalancer
+  selector:
+    app: nop
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 5000  
+```
+![preview](images/k8s36.png)
 * Create a Headless Service to interact with nopCommerce with MySQL 
-* Create a Load Balancer to expose the nopCommerce to External World 
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: headless
+spec:
+  type: ClusterIP
+  clusterIP: None 
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 5000
+  selector:
+    app: nop
+    db: mysql
+```
+* Create a Load Balancer to expose the nopCommerce to External World
+![preview](images/k8s34.png) 
+![preview](images/k8s37.png) 
 * Try to draw the Architecture Diagram for the above by using Draw.io Tool.
+
+
+## Date: 09/05/2023
+## 1.Create a Kubernetes cluster using kubeadm
+* To install kubeadm cluster create `2 or 3 t2medium` EC2 instances in AWS cloud 
+* Created shell script to install kubeadm
+```bash
+#!/bin/bash
+apt-get update
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+sudo usermod -aG docker ubuntu 
+wget https://storage.googleapis.com/golang/getgo/installer_linux
+chmod +x ./installer_linux
+./installer_linux
+source ~/.bash_profile
+git clone https://github.com/Mirantis/cri-dockerd.git
+cd cri-dockerd
+mkdir bin
+go build -o bin/cri-dockerd
+mkdir -p /usr/local/bin
+install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
+cp -a packaging/systemd/* /etc/systemd/system
+sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+systemctl daemon-reload
+systemctl enable cri-docker.service
+systemctl enable --now cri-docker.socket
+cd ~
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
+sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+```
+* EXit and Re-login into machine.
+* To create cluster use command in master node `kubeadm init --pod-network-cidr "10.244.0.0/16" --cri-socket "unix:///var/run/cri-dockerd.sock"`
+* ![preview](images/k8s6.png)
+* ![preview](images/k8s7.png)
+* To configure we have to follow above commands as regular user so you can exit as root user.
+* To setup configure run this command to install flannel `kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml`
+* ![preview](images/k8s8.png)
+* To attache the nodes to the master run this command by providing CRI-DOCKER in node as a root user `kubeadm join 172.31.85.229:6443 --token bq3k8r.gq6fdcgdaa3oqelt \
+        --cri-socket "unix:///var/run/cri-dockerd.sock" \
+        --discovery-token-ca-cert-hash sha256:659c7d1ad0262f54bcaa2be1610b251cc064345236d8342a39c3eae0e2ef1617`
+![preview](images/k8s9.png)
+* In master node run `kubectl get nodes -w`
+* ![preview](images/k8s10.png)
+
+## 2.Deploy any application using kubectl
+* Deployed Game-of-life by using Deployment in `microk8s cluster`
+* Game-of-life yaml file
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-of-life
+spec:
+  minReadySeconds: 1
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gol
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      name: gol-pod
+      labels:
+        app: gol
+    spec:
+      containers:
+        - name: gol-cont
+          image: manugatla/gameoflife
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: gol-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: gol
+  ports:
+    - port: 8081
+      protocol: TCP
+      targetPort: 8080 
+```
+* To Create Deployement `microk8s kubectl apply -f gol.yaml
+![preview](images/k8s-eks-42.png)
+* To get the pods `microk8s kubectl get po -w`
+![preview](images/k8s-eks-41.png)
+## 3.Backup Kubernetes I.e backup etcd
+## 4.List out all the pod’s running in kube system namespace
+* To listout pods running in kube-system namespace
+* `kubectl get pods --namespace=kube-system`
+![preview](images/k8s-eks-43.png)
+## 5.Write down all the steps required to make Kubernetes highly available
+* For worker node high availability, you need to run multiple worker nodes that is required for your applications. When there is a pod scaling activity or a node failure there should be enough capacity on other worker nodes for the pods to get scheduled.
+6.Do a rolling update and roll back.
+7.Ensure usage of secret in MySQL and configmaps
+## 8.Create a nop commerce deployment with MySQL statefulset and nop deployment
+mysql-manifest file
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysqldb
+spec:
+  minReadySeconds: 1
+  serviceName: mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      db: mysql
+  template:
+    metadata:
+      name: mysqlpod
+      labels:
+        db: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: manuroot
+            - name: MYSQL_USER
+              value: gmanohar
+            - name: MYSQL_PASSWORD 
+              value: manu1234
+            - name: MYSQL_DATABASE 
+              value: students
+          volumeMounts:
+            - name: mysql-pvc
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-pvc
+          persistentVolumeClaim:
+            claimName: mysql-pvc1
+            readOnly: false
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: sqlvolume
+  #     spec:
+  #       accessModes:
+  #         - ReadWriteOnce
+  #       selector:
+  #         matchLabels:
+  #           db: mysql
+  #       storageClassName: managed
+  #       resources:
+  #         requests:
+  #           storage: 1Gi      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  type: ClusterIP
+  selector:
+    db: mysql
+  ports:
+    - port: 4500
+      protocol: TCP
+      targetPort: 3306
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: managed
+  resources:
+    requests:
+      storage: 1Gi
+```

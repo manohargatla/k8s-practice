@@ -29,7 +29,3 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 
 
-kubeadm join 172.31.81.166:6443 --token s094vz.xn0pa174v6m8vu9s \
-        --cri-socket "unix:///var/run/cri-dockerd.sock" \
-        --discovery-token-ca-cert-hash sha256:d2764f3c0e358c6ca2dba0e140fa5822d34a97c0ef99293ba2f0e6d85778e59c
-
