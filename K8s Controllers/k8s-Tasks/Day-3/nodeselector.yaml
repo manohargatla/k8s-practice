@@ -1,0 +1,101 @@
+## nop
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nopdeploy
+  labels:
+    app: nop
+spec:
+  minReadySeconds: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nop
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      name: noppod
+      labels:
+        app: nop
+    spec:
+      containers:
+        - name: nopcommerce
+          image: manugatla/nopcommerce
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MYSQL_SERVER
+              value: mysql
+      nodeSelector:
+        disktype: ssd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nopsvc
+spec:
+  type: LoadBalancer
+  selector:
+    app: nop
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 5000
+---
+## mysql 
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysqldb
+spec:
+  minReadySeconds: 1
+  serviceName: mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      db: mysql
+  template:
+    metadata:
+      name: mysqlpod
+      labels:
+        db: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: manuroot
+            - name: MYSQL_USER
+              value: gmanohar
+            - name: MYSQL_PASSWORD
+              value: manu1234
+            - name: MYSQL_DATABASE
+              value: students
+          volumeMounts:
+            - name: mysql-pvc
+              mountPath: /var/lib/mysql
+      nodeSelector:
+        disktype1: ssd1
+      volumes:
+        - name: mysql-pvc
+          emptyDir:
+            sizeLimit: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  type: ClusterIP
+  selector:
+    db: mysql
+  ports:
+    - port: 4500
+      protocol: TCP
+      targetPort: 3306

@@ -1,0 +1,74 @@
+---
+## secret 
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sql-secret
+data:
+  MYSQL_ROOT_PASSWORD: bWFudXJvb3Q=
+  MYSQL_USER: bWFudQ==
+  MYSQL_PASSWORD: Z2F0bGFtYW5v
+  MYSQL_DATABASE: c3R1ZGVudHM=
+---
+# ## config-map 
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: mysql-config
+# data:
+#   MYSQL_ROOT_PASSWORD: manuroot
+#   MYSQL_USER: manu
+#   MYSQL_PASSWORD: gatlamano
+#   MYSQL_DATABASE: students
+# ---
+## mysql-pod
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  minReadySeconds: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      name: mysqlpod
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+          - containerPort: 3306
+          envFrom:
+            # - configMapRef:
+            #     name: mysql-config 
+            - secretRef:
+                name: sql-secret
+      #     volumeMounts:
+      #       - name: dummy
+      #         mountPath: /tmp/dummy
+      # volumes:
+      #   - name: dummy
+      #     configMap:
+      #       name: mysql-config      
+---
+## service file for mysql
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  type: LoadBalancer
+  ports:
+    - port: 3306
+      protocol: TCP
+      targetPort: 3306
+---

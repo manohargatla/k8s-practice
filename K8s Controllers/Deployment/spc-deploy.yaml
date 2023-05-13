@@ -2,17 +2,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jenkins1
+  name: spc
   labels:
-    tool: jenkins
+    tool: spc-app
   annotations:
-    kubernetes.io/change-cause: "jenkins app"
+    kubernetes.io/change-cause: "spc-app"
 spec:
   minReadySeconds: 2
   replicas: 1
   selector:
     matchLabels:
-      tool: jenkins
+      tool: spc-app
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -20,28 +20,24 @@ spec:
       maxUnavailable: 25%
   template:
     metadata:
-      name: jenkins-pod
+      name: spc-app-pod
       labels:
-        tool: jenkins
+        tool: spc-app
     spec:
       containers:
-        - name: jenkins
-          image: manugatla/jenkins
-          resources:
-            requests:
-              memory: "1000Mi"
-              cpu: "1000m"
+        - name: spc-app
+          image: manugatla/spring-petclinic
           ports:
             - containerPort: 8080
 ---
-## service file for jenkins
+## service file for spc-app
 apiVersion: v1
 kind: Service
 metadata:
-  name: jenkins-svc1
+  name: spc-svc
 spec:
   selector:
-    tool: jenkins
+    tool: spc-app
   type: LoadBalancer
   ports:
     - port: 8088

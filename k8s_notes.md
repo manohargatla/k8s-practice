@@ -706,17 +706,188 @@ spec:
 * To get the pods `microk8s kubectl get po -w`
 ![preview](images/k8s-eks-41.png)
 ## 3.Backup Kubernetes I.e backup etcd
+* To take etcd backup install etcd-client `sudo apt install etcd-client`
+![preview](images/k8s-etcd-60.png)
+* You can also get the above details by describing the etcd pod running in the kube-system namespace. 
+`kubectl get po -n kube-system` && `kubectl describe pod etcd-master-node -n kube-system`
+![preview](images/k8s-etcd-61.png)
+![preview](images/k8s-etcd-62.png)
+* Take an etcd snapshot backup using the following command.
+```
+ETCDCTL_API=3 etcdctl \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key \
+  snapshot save /etcd.db
+```
+![preview](images/k8s-etcd-63.png)
+* Also, you can verify the snapshot using the following command.
+`ETCDCTL_API=3 etcdctl --write-out=table snapshot status /etcd.db`
+* Here is the command to restore etcd.`ETCDCTL_API=3 etcdctl snapshot restore /etcd.db`
+![preview](images/k8s-etcd-64.png)
 ## 4.List out all the pod’s running in kube system namespace
-* To listout pods running in kube-system namespace
-* `kubectl get pods --namespace=kube-system`
+* To listout pods running in kube-system namespace `kubectl get pods --namespace=kube-system`
 ![preview](images/k8s-eks-43.png)
 ## 5.Write down all the steps required to make Kubernetes highly available
 * For worker node high availability, you need to run multiple worker nodes that is required for your applications. When there is a pod scaling activity or a node failure there should be enough capacity on other worker nodes for the pods to get scheduled.
-6.Do a rolling update and roll back.
-7.Ensure usage of secret in MySQL and configmaps
-## 8.Create a nop commerce deployment with MySQL statefulset and nop deployment
-mysql-manifest file
+* Scalability is the capacity of a system to scale up or down in performance and cost in response to changes in application and system processing demands.
+* Crucial components like the API server and controller manager are replicated on several masters (typically two or more masters) in a Kubernetes High Availability system. If one of the masters fails, the remaining masters keep the cluster functioning.
+* Kubernetes High Availability ensures that Kubernetes and its supporting components have no single point of failure.
+* A single master cluster is vulnerable to failure, but a multi-master cluster uses many master nodes, each having access to the same worker nodes.
+* The Kubernetes control plane and its nodes must be distributed over many zones to provide high availability. Single-zone and multi-zonal node pools are available in GKE. Distribute your workload over many compute zones in a region using multi-zonal node pools, distributing nodes equally across zones to create a highly available application.
+![preview](images/k8s-HA-50.png)
+## 6.Do a rolling update and roll back.
+* Create a Deployment file with rolling update
 ```yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+  annotations:
+    kubernetes.io/change-cause: "changed to nginx"
+spec:
+  minReadySeconds: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+---
+## service file for nginx
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  selector:
+    app: nginx
+  type: LoadBalancer
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+```
+* Create the deployment by usimg below commands
+* `kubectl apply -f rollout.yaml`
+![preview](images/k8s-rl-46.png)
+![preview](images/k8s-rl-44.png)
+* Change the image to nginx and apply the changes 
+* to check the history of rollout `kubectl rollout history deployment/nginx`
+![preview](images/k8s-rl-47.png)
+![preview](images/k8s-rl-45.png)
+## 7.Ensure usage of secret in MySQL and configmaps
+* A Kubernetes ConfigMap is an API object that allows you to store data as key-value pairs.
+* Create a configmap manifest yaml file
+```yaml
+---
+## config-map 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+data:
+  MYSQL_ROOT_PASSWORD: manuroot
+  MYSQL_USER: manu
+  MYSQL_PASSWORD: gatlamano
+  MYSQL_DATABASE: students
+```
+* Create mysql pod manifest yaml file
+```yaml
+## mysql-pod
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  minReadySeconds: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      name: mysqlpod
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+          - containerPort: 3306
+          envFrom:
+            - configMapRef:
+                name: mysql-config
+---
+## service file for mysql
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  type: LoadBalancer
+  ports:
+    - port: 3306
+      protocol: TCP
+      targetPort: 3306
+```
+* To check the configmap values get inside pod using `kubectl exec -it mysql-85d457d6df-kw2s8 -- /bin/bash `
+* To view environmental variables type `printenv`
+![preview](images/k8s-rl-48.png)
+```yaml
+## secret file
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sql-secret
+data:
+  MYSQL_ROOT_PASSWORD: bWFudXJvb3Q=
+  MYSQL_USER: bWFudQ==
+  MYSQL_PASSWORD: Z2F0bGFtYW5v
+  MYSQL_DATABASE: c3R1ZGVudHM=
+```
+* To create secret use this command `kubectl apply -f secret.yaml`
+* To desccribe the secret `kubectl describe secret sql-secret`
+![preview](images/k8s-rl-49.png)
+
+## 8.Create a nop commerce deployment with MySQL statefulset and nop deployment
+## mysql-manifest file
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: managed
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -782,16 +953,95 @@ spec:
     - port: 4500
       protocol: TCP
       targetPort: 3306
+```
+## nop yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nopdeploy
+  labels:
+    app: nop
+spec:
+  minReadySeconds: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nop
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      name: noppod
+      labels:
+        app: nop
+    spec:
+      containers:
+        - name: nopcommerce
+          image: manugatla/nopcommerce
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MYSQL_SERVER
+              value: mysql
 ---
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: Service
 metadata:
-  name: mysql-pvc1
+  name: nopsvc
 spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: managed
-  resources:
-    requests:
-      storage: 1Gi
+  type: LoadBalancer
+  selector:
+    app: nop
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 5000
 ```
+## Date: 11/05/2023
+## Kubernetes tasks
+## 1.Create 1 master node and 2 worker nodes – run app on node1 and db on node2 by using
+  ## a.Node selector
+  * use below commands to see nodes and labels 
+  * `kubectl get nodes` 
+  * `kubectl get nodes --show-labels`
+  ![preview](images/k8s-ns-51.png)
+  * To assign the labels to nodes `kubectl label nodes <node-name> <key=value>`
+  ![preview](images/k8s-ns-52.png)
+  * To Create nop manifest to assign specific node by using nodeselector option
+  * `kubectl apply -f nop.yaml` && `kubectl get po -o wide`
+  ![preview](images/k8s-ns-53.png)
+  * To Create mysql manifest to assign specific node by using nodeselector option
+  * `kubectl apply -f sql.yaml` && `kubectl get po -o wide`
+  ![preview](images/k8s-ns-54.png)
+  ## b.Affinity
+  * use below commands to see nodes and labels 
+  * `kubectl get nodes` 
+  * `kubectl get nodes --show-labels`
+  ![preview](images/k8s-ns-51.png)
+  * To assign the labels to nodes `kubectl label nodes <node-name> <key=value>`
+  ![preview](images/k8s-ns-52.png)
+  * To Create mysql manifest to assign specific node by using nodeselector option
+  * `kubectl apply -f sql-affinity.yaml` && `kubectl get po -o wide`
+  ![preview](images/k8s-nafnt-55.png)
+  * To Create nop manifest to assign specific node by using nodeselector option
+  * `kubectl apply -f nop-affinity.yaml` && `kubectl get po -o wide`
+  ![preview](images/k8s-nafnt-56.png)
+  ## c.Taints and tolerances 
+  * You add a taint to a node using kubectl taint
+  * `kubectl taint nodes <node-name> key=value:NoSchedule`
+  * To remove the taint added by the command above, you can run:
+  * `kubectl taint nodes <node-name> key=value:NoSchedule-`
+  ![preview](images/k8s-taint-57.png)
+  * You specify a toleration for a pod in the PodSpec.
+  * `kubectl apply -f sql-toleration.yaml`
+  ![preview](images/k8s-tolrt-58.png)
+  * `kubectl apply -f nop-toleration.yaml`
+  ![preview](images/k8s-tolrt-59.png)
+## 2.Create k8s cluster with version 1.25 and run any deployment(nginx/any) and then upgrade cluster to version 1.27  
+* Installed kubeadm with 1.25 version and deployed jenkins application
+![preview](images/k8s-upgrade-69.png)
+![preview](images/k8s-upgrade-67.png)
+* while upgrading to version from 1.25.5 to 1.27.0 getting error
+![preview](images/k8s-upgrade-68.png)
+

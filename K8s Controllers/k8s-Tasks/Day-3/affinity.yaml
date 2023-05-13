@@ -1,15 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nopdeploy
+  labels:
+    app: nop
+spec:
+  minReadySeconds: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nop
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      name: noppod
+      labels:
+        app: nop
+    spec:
+      containers:
+        - name: nopcommerce
+          image: manugatla/nopcommerce
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MYSQL_SERVER
+              value: mysql
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: disktype
+                    operator: In
+                    values:
+                      - ssd
 ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: mysql-pvc1
-# spec:
-#   accessModes:
-#     - ReadWriteOnce
-#   storageClassName: managed
-#   resources:
-#     requests:
-#       storage: 1Gi
+apiVersion: v1
+kind: Service
+metadata:
+  name: nopsvc
+spec:
+  type: LoadBalancer
+  selector:
+    app: nop
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 5000
+## mysql 
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -38,53 +77,26 @@ spec:
               value: manuroot
             - name: MYSQL_USER
               value: gmanohar
-            - name: MYSQL_PASSWORD 
+            - name: MYSQL_PASSWORD
               value: manu1234
-            - name: MYSQL_DATABASE 
+            - name: MYSQL_DATABASE
               value: students
           volumeMounts:
             - name: mysql-pvc
               mountPath: /var/lib/mysql
-      # nodeSelector:
-      #   disktype1: ssd1
       affinity:
         nodeAffinity:
-          # preferredDuringSchedulingIgnoredDuringExecution:
-          #   - preference: 
-          #       matchExpressions:
-          #         - key: disktype1
-          #           operator: Exists
-          #           values: ssd1 
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
                   - key: disktype1
                     operator: In
-                    values: 
+                    values:
                       - ssd1
-            
-                    
       volumes:
         - name: mysql-pvc
-          # persistentVolumeClaim:
-          #   claimName: mysql-pvc1
-          #   readOnly: false
           emptyDir:
             sizeLimit: 100Mi
-
-  # volumeClaimTemplates:
-  #   - metadata:
-  #       name: sqlvolume
-  #     spec:
-  #       accessModes:
-  #         - ReadWriteOnce
-  #       selector:
-  #         matchLabels:
-  #           db: mysql
-  #       storageClassName: managed
-  #       resources:
-  #         requests:
-  #           storage: 1Gi      
 ---
 apiVersion: v1
 kind: Service
@@ -98,10 +110,3 @@ spec:
     - port: 4500
       protocol: TCP
       targetPort: 3306
----
-
-    
-
-  
-        
-
