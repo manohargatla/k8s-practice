@@ -1045,4 +1045,111 @@ spec:
   ![preview](images/k8s-tolrt-59.png)
 ## 2.Create k8s cluster with version 1.25 and run any deployment(nginx/any) and then upgrade cluster to version 1.27  
 * Installed kubeadm with 1.25 version and deployed jenkins application
+* while upgrading to version from 1.25.5 to 1.27.0 getting error
+
+## Date: 16/05/2023(Kubernetes tasks)
+## 1.Installing EKS Cluster using Eksctl 
+* First Create an IAM user and Create security credentials(secret key & secret access key)
+* Install aws-cli and configure `aws configure`
+* Install Kubectl 
+* `curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"`
+* `sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl` & `chmod +x kubectl`
+* `kubectl version`
+![preview](images/k8s-ekctl-eks-77.png)
+* Install Eksctl
+* To download the latest release, run:
+```bash
+# for ARM systems, set ARCH to: `arm64`, `armv6` or `armv7`
+ARCH=amd64
+PLATFORM=$(uname -s)_$ARCH
+
+curl -sLO "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+
+# (Optional) Verify checksum
+curl -sL "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+
+tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+
+sudo mv /tmp/eksctl /usr/local/bin
+``` 
+![preview](images/k8s-ekctl-eks-75.png)
+To see the version `eksctl version`
+* Create a manifest yaml as cluster.yaml 
+```yaml
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: eks-cluster
+  region: us-east-1
+nodeGroups:
+  - name: ng-1
+    instanceType: t2.medium
+    desiredCapacity: 2
+    volumeSize: 20
+    ssh:
+      allow: true # will use ~/.ssh/id_rsa.pub as the default ssh key
+```
+* Before applying cluster.yaml generate `ssh-keygen` then apply.
+![preview](images/k8s-ekctl-eks-76.png)
+* To see the versions of above
+![preview](images/k8s-ekctl-eks-78.png)
+* To create an cluster, run: `eksctl create cluster -f cluster.yaml`
+```yaml
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: eks-cluster
+  region: us-east-1
+nodeGroups:
+  - name: ng-1
+    instanceType: t2.medium
+    desiredCapacity: 2
+    volumeSize: 20
+    ssh:
+      allow: true # will use ~/.ssh/id_rsa.pub as the default ssh key
+```
+![preview](images/k8s-ekctl-eks-79.png)
+* Cluster will be created after 20mins
+![preview](images/k8s-ekctl-eks-80.png)
+
+## 2.Installations using helm chart
+* First install helm chart in cluster, run:
+* `curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3`
+* `chmod 700 get_helm.sh`
+*  `./get_helm.sh`
+![preview](images/k8s-eks-helm-85.png)
+  # a. Mysql
+  ![preview](images/k8s-eks-helm-86.png)
+  ![preview](images/k8s-eks-helm-87.png)
+  ![preview](images/k8s-eks-helm-88.png)
+  # b. PostgreSql
+  ![preview](images/k8s-eks-helm-93.png)
+  ![preview](images/k8s-eks-helm-94.png)
+  ![preview](images/k8s-eks-helm-95.png)
+  # c. mongoDB
+  ![preview](images/k8s-eks-helm-92.png)
+  # d. Redis cache
+  ![preview](images/k8s-eks-helm-89.png)
+  ![preview](images/k8s-eks-helm-91.png)
+  ![preview](images/k8s-eks-helm-90.png)
+## 3. write kostomize file by creating files for 3 environments
+* First create Kustomize file as two directories like base and overlays 
+  * In bases create main files like deployement.yaml, service.yaml, kustomization.yaml..etc
+  * In overlays create multiple environments like `DEV, QA, UAT, PROD` and create kustomization file in each directory.
+  # a.dev-environment
+  * `kubectl apply -k ./`
+  ![preview](images/k8s-ekctl-eks-81.png)
+   ![preview](images/k8s-ekctl-eks-84.png)
+  # b.qa-environment
+  * `kubectl apply -k ../qa/`
+  ![preview](images/k8s-ekctl-eks-82.png)
+  # c.test-environment
+  * `kubectl apply -k ../uat/`
+  ![preview](images/k8s-ekctl-eks-83.png)
+# every environment should have their own secrets\
+* `kubectl apply -k ./`
+  ![preview](images/k8s-eks-helm-97.png)
+  ![preview](images/k8s-eks-helm-98.png)
+  ![preview](images/k8s-eks-helm-99.png)
+  ![preview](images/k8s-eks-helm-100.png)
 
