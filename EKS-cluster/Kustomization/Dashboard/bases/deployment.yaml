@@ -40,4 +40,8 @@ spec:
             httpGet:
               port: 80
               path: /
+          envFrom:
+            - secretRef:
+                name: sql-secret
+                optional: false
 ---
