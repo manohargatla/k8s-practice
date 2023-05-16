@@ -26,7 +26,7 @@ spec:
             - containerPort: 80
           livenessProbe:
             initialDelaySeconds: 1
-            successThreshold: 3
+            successThreshold: 1
             periodSeconds: 5
             timeoutSeconds: 4
             httpGet:
@@ -34,9 +34,10 @@ spec:
               path: /
           readinessProbe:
             initialDelaySeconds: 1
-            successThreshold: 3
+            successThreshold: 1
             periodSeconds: 5
             timeoutSeconds: 4
             httpGet:
               port: 80
               path: /
+---
