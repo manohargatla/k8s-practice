@@ -58,6 +58,6 @@ spec:
         - containerPort: 3306
       envFrom:
         - configMapRef:
-            name: sql-config
+            name: sql-secret
             optional: false
 ---
