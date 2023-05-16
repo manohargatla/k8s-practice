@@ -1,47 +1,63 @@
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: dashboarddeploy
+#   labels:
+#     app: dashboard
+# spec:
+#   minReadySeconds: 1
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: dashboard
+#   strategy:
+#     type: RollingUpdate
+#   template:
+#     metadata:
+#       name: dashboard
+#       labels:
+#         app: dashboard
+#     spec:
+#       containers:
+#         - name: dashboardcommerce
+#           image: mysql
+#           ports:
+#             - containerPort: 80
+#           livenessProbe:
+#             initialDelaySeconds: 1
+#             successThreshold: 1
+#             periodSeconds: 5
+#             timeoutSeconds: 4
+#             httpGet:
+#               port: 80
+#               path: /
+#           readinessProbe:
+#             initialDelaySeconds: 1
+#             successThreshold: 1
+#             periodSeconds: 5
+#             timeoutSeconds: 4
+#             httpGet:
+#               port: 80
+#               path: /
+#           envFrom:
+#             - secretRef:
+#                 name: sql-secret
+#                 optional: false
+# ---
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
-  name: dashboarddeploy
-  labels:
-    app: dashboard
+  name: mysql
 spec:
-  minReadySeconds: 1
-  replicas: 1
-  selector:
-    matchLabels:
-      app: dashboard
-  strategy:
-    type: RollingUpdate
-  template:
-    metadata:
-      name: dashboard
-      labels:
-        app: dashboard
-    spec:
-      containers:
-        - name: dashboardcommerce
-          image: mysql
-          ports:
-            - containerPort: 80
-          livenessProbe:
-            initialDelaySeconds: 1
-            successThreshold: 1
-            periodSeconds: 5
-            timeoutSeconds: 4
-            httpGet:
-              port: 80
-              path: /
-          readinessProbe:
-            initialDelaySeconds: 1
-            successThreshold: 1
-            periodSeconds: 5
-            timeoutSeconds: 4
-            httpGet:
-              port: 80
-              path: /
-          envFrom:
-            - secretRef:
-                name: sql-secret
-                optional: false
+  containers:
+    - name: sql-pod
+      image: mysql
+      ports:
+        - containerPort: 3306
+      envFrom:
+        - configMapRef:
+            name: sql-config
+            optional: false
 ---
