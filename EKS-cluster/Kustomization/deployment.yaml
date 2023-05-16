@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboarddeploy
+  labels:
+    app: dashboard
+spec:
+  minReadySeconds: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      name: dashboard
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - name: dashboardcommerce
+          image: shaikkhajaibrahim/dashboardservice:1.0.0
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            initialDelaySeconds: 1
+            successThreshold: 3
+            periodSeconds: 5
+            timeoutSeconds: 4
+            httpGet:
+              port: 80
+              path: /
+          readinessProbe:
+            initialDelaySeconds: 1
+            successThreshold: 3
+            periodSeconds: 5
+            timeoutSeconds: 4
+            httpGet:
+              port: 80
+              path: /

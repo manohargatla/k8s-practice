@@ -721,11 +721,16 @@ ETCDCTL_API=3 etcdctl \
   --key=/etc/kubernetes/pki/etcd/server.key \
   snapshot save /etcd.db
 ```
-![preview](images/k8s-etcd-63.png)
+![preview](images/k8s-up-etcd-70.png)
+![preview](images/k8s-up-etcd-71.png)
+* To check the status of ETCD snapshot.db
+![preview](images/k8s-up-etcd-72.png)
 * Also, you can verify the snapshot using the following command.
 `ETCDCTL_API=3 etcdctl --write-out=table snapshot status /etcd.db`
-* Here is the command to restore etcd.`ETCDCTL_API=3 etcdctl snapshot restore /etcd.db`
 ![preview](images/k8s-etcd-64.png)
+* Here is the command to restore etcd.`etcdutl snapshot restore snapshot.db --data-dir spc.yaml`&&`ETCDCTL_API=3 etcdctl snapshot restore /etcd.db [optional]`
+![preview](images/k8s-up-etcd-73.png)
+![preview](images/k8s-up-etcd-74.png)
 ## 4.List out all the pod’s running in kube system namespace
 * To listout pods running in kube-system namespace `kubectl get pods --namespace=kube-system`
 ![preview](images/k8s-eks-43.png)
@@ -1040,8 +1045,4 @@ spec:
   ![preview](images/k8s-tolrt-59.png)
 ## 2.Create k8s cluster with version 1.25 and run any deployment(nginx/any) and then upgrade cluster to version 1.27  
 * Installed kubeadm with 1.25 version and deployed jenkins application
-![preview](images/k8s-upgrade-69.png)
-![preview](images/k8s-upgrade-67.png)
-* while upgrading to version from 1.25.5 to 1.27.0 getting error
-![preview](images/k8s-upgrade-68.png)
 
