@@ -42,6 +42,6 @@ spec:
               path: /
           envFrom:
             - configMapRef:
-              name: sql-config
-              optional: false
+                name: sql-config
+                optional: false
 ---
