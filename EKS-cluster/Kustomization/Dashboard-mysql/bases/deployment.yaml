@@ -24,22 +24,22 @@ spec:
           image: mysql:8.0
           ports:
             - containerPort: 3306
-          livenessProbe:
-            initialDelaySeconds: 1
-            successThreshold: 1
-            periodSeconds: 5
-            timeoutSeconds: 4
-            httpGet:
-              port: 3306
-              path: /
-          readinessProbe:
-            initialDelaySeconds: 1
-            successThreshold: 1
-            periodSeconds: 5
-            timeoutSeconds: 4
-            httpGet:
-              port: 3306
-              path: /
+          # livenessProbe:
+          #   initialDelaySeconds: 1
+          #   successThreshold: 1
+          #   periodSeconds: 5
+          #   timeoutSeconds: 4
+          #   httpGet:
+          #     port: 3306
+          #     path: /
+          # readinessProbe:
+          #   initialDelaySeconds: 1
+          #   successThreshold: 1
+          #   periodSeconds: 5
+          #   timeoutSeconds: 4
+          #   httpGet:
+          #     port: 3306
+          #     path: /
           envFrom:
             - configMapRef:
                 name: sql-config
