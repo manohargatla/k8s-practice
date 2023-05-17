@@ -1146,7 +1146,7 @@ nodeGroups:
   # c.test-environment
   * `kubectl apply -k ../uat/`
   ![preview](images/k8s-ekctl-eks-83.png)
-# every environment should have their own secrets\
+# every environment should have their own secrets
 * `kubectl apply -k ./`
   ![preview](images/k8s-eks-helm-97.png)
   ![preview](images/k8s-eks-helm-98.png)

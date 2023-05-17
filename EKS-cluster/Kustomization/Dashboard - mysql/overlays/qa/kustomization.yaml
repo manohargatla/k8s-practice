@@ -1,0 +1,10 @@
+---
+resources:
+  - ../../bases
+namespace: qa
+namePrefix: qa-
+labels:
+  - pairs:
+      env: qa
+      version: "8.0.33"
+  

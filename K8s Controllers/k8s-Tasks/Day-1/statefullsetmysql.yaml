@@ -1,15 +1,15 @@
 ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: mysql-pvc1
-# spec:
-#   accessModes:
-#     - ReadWriteOnce
-#   storageClassName: managed
-#   resources:
-#     requests:
-#       storage: 1Gi
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: managed
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -47,30 +47,30 @@ spec:
               mountPath: /var/lib/mysql
       # nodeSelector:
       #   disktype1: ssd1
-      affinity:
-        nodeAffinity:
-          # preferredDuringSchedulingIgnoredDuringExecution:
-          #   - preference: 
-          #       matchExpressions:
-          #         - key: disktype1
-          #           operator: Exists
-          #           values: ssd1 
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: disktype1
-                    operator: In
-                    values: 
-                      - ssd1
+      # affinity:
+      #   nodeAffinity:
+      #     # preferredDuringSchedulingIgnoredDuringExecution:
+      #     #   - preference: 
+      #     #       matchExpressions:
+      #     #         - key: disktype1
+      #     #           operator: Exists
+      #     #           values: ssd1 
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #         - matchExpressions:
+      #             - key: disktype1
+      #               operator: In
+      #               values: 
+      #                 - ssd1
             
                     
       volumes:
         - name: mysql-pvc
-          # persistentVolumeClaim:
-          #   claimName: mysql-pvc1
-          #   readOnly: false
-          emptyDir:
-            sizeLimit: 100Mi
+          persistentVolumeClaim:
+            claimName: mysql-pvc1
+            readOnly: false
+          # emptyDir:
+          #   sizeLimit: 100Mi
 
   # volumeClaimTemplates:
   #   - metadata:

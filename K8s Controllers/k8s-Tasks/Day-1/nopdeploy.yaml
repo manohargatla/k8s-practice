@@ -28,20 +28,20 @@ spec:
               value: mysql
       # nodeSelector:
       #   disktype: ssd
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: disktype
-                    operator: In
-                    values: 
-                      - ssd
-      tolerations:
-        - key: disktype
-          operator: Equal
-          value: ssd
-          effect: NoSchedule
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #         - matchExpressions:
+      #             - key: disktype
+      #               operator: In
+      #               values: 
+      #                 - ssd
+      # tolerations:
+      #   - key: disktype
+      #     operator: Equal
+      #     value: ssd
+      #     effect: NoSchedule
 ---
 apiVersion: v1
 kind: Service
