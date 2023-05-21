@@ -14,22 +14,22 @@ spec:
           - path: /spc(/|$)(.*)
             pathType: Prefix
             backend:
-              - service:
-                  name: spc-svc
-                  port:
-                    number: 8080
+              service:
+                name: spc-svc
+                port:
+                  number: 8080
           - path: /nop(/|$)(.*)
             pathType: Prefix
             backend:
-              - service:
-                  name: nop-svc
-                  port:
-                    number: 5000
+              service:
+                name: nop-svc
+                port:
+                  number: 5000
           - path: /dashboard(/|$)(.*)
             pathType: Prefix
             backend:
-              - service:
-                  name: dashboard-svc
-                  port:
-                    number: 80
+              service:
+                name: dashboard-svc
+                port:
+                  number: 80
             
