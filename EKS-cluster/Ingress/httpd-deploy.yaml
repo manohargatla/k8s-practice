@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpd
+spec:
+  minReadySeconds: 3
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpd
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      name: httpd-pod
+      labels:
+        app: httpd
+    spec:
+      containers:
+        - name: httpd-cont
+          image: httpd
+          ports:
+            - containerPort: 80
+---
+## httpd service file
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpd-svc
+spec:
+  selector:
+    app: httpd
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80

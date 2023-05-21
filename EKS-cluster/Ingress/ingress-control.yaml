@@ -32,4 +32,18 @@ spec:
                 name: dashboard-svc
                 port:
                   number: 80
+          - path: /nginx(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-svc
+                port:
+                  number: 80
+          - path: /httpd(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: httpd-svc
+                port:
+                  number: 80
             
