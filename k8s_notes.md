@@ -1183,7 +1183,7 @@ nodeGroups:
 ![preview](images/k8s-ekctl-eks-76.png)
 * To see the versions of above
 ![preview](images/k8s-ekctl-eks-78.png)
-* To create an cluster, run: `eksctl create cluster -f cluster.yaml`
+* To create an cluster, run: `eksctl create cluster -f cluster.yaml` 
 ```yaml
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
@@ -1201,6 +1201,7 @@ nodeGroups:
 ![preview](images/k8s-ekctl-eks-79.png)
 * Cluster will be created after 20mins
 ![preview](images/k8s-ekctl-eks-80.png)
+* To delete cluster, run: `eksctl delete cluster -f cluster.yaml --wait --disable-nodegroup-eviction`
 
 ## 2.Installations using helm chart
 * First install helm chart in cluster, run:
@@ -1243,6 +1244,79 @@ nodeGroups:
   ![preview](images/k8s-eks-helm-99.png)
   ![preview](images/k8s-eks-helm-100.png)
   ![preview](images/k8s-eks-helm-101.png)
+## Ingress
+* Kubernetes Ingress is an API object that provides routing rules to manage access to the services within a Kubernetes cluster. This typically uses HTTPS and HTTP protocols to facilitate the routing. Ingress is the ideal choice for a production environment.
+* In k8s we have 3 major objects which will help in ingress (layer 7 loadbalancing)
+  * ingress
+  * ingress-controller
+  * ingress class
+* K8s doesnot have controller for ingress.
+* Deploying your services, you attach information that tells Traefik the characteristics of the requests the services can handle.
+![preview](images/k8s-eks-ingress-115.png)
+## Ingress Controller
+* Create an a EKS cluster by using eksctl 
+* Install helm by run below commands
+```
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+```
+![preview](images/k8s-eks-ingress-102.png)
+* Install ingress controller by he chart by below commands
+```
+helm repo add nginx-stable https://helm.nginx.com/stable
+helm repo update
+helm upgrade --install ingress-nginx ingress-nginx \
+             --repo https://kubernetes.github.io/ingress-nginx \
+             --namespace ingress-nginx --create-namespace
+```
+![preview](images/k8s-eks-ingress-103.png)
+* To get the service of ingress controller use coommand given by ingress controller
+`kubectl --namespace ingress-nginx get services -o wide -w ingress-nginx-controller`
+* To get ingress class of ingress controller
+`kubectl get ingressclasses.networking.k8s.io`
+
+* Create deployment, service and ingress manifest files
+* create all by run `kubectl apply -f .`
+![preview](images/k8s-eks-ingress-105.png)
+* To access the application in the web copy service type url/service names
+![preview](images/k8s-eks-ingress-106.png) ## code error
+![preview](images/k8s-eks-ingress-108.png)
+![preview](images/k8s-eks-ingress-109.png)
+![preview](images/k8s-eks-ingress-110.png)
+![preview](images/k8s-eks-ingress-112.png)
+## Monitoring EKS cluster by elastic cloud kibana
+* Create an a eks cluster 
+* login to the elastic cloud and click on obeservability
+![preview](images/mon-8.png)
+![preview](images/mon-9.png)
+* Add the kubernetes integration by creating agent policy provided by ELK(kibana) in cluster and deployed an a application
+![preview](images/mon-11.png)
+![preview](images/mon-26.png)
+![preview](images/mon-27.png)
+* After installing it listens the agents of cluster added to the agents and it shows the healthy conditions of nodes
+![preview](images/mon-12.png)
+* Check the logs of agents by clicking in fleet agents 
+![preview](images/mon-13.png)
+![preview](images/mon-14.png)
+* To checkt the metrics of cluster click on overview
+![preview](images/mon-15.png)
+![preview](images/mon-16.png)
+* Before accessing of an application
+![preview](images/mon-17.png)
+* After accessing of an application
+![preview](images/mon-25.png)
+* Inventory of hosts, k8s pods etc,,.
+![preview](images/mon-19.png)
+![preview](images/mon-20.png)
+![preview](images/mon-21.png)
+* To Check the logs events
+![preview](images/mon-23.png)
+![preview](images/mon-24.png)
+* Created Dashboard visualization
+![preview](images/mon-22.png)
+
+* 
 
 ## Deploying application into k8s cluster through jenkins
 step -1 crrst
