@@ -63,10 +63,14 @@ Zero-Down time Deployments
 ```bash
 # Run these commands as root
 ###Install GO###
-wget https://storage.googleapis.com/golang/getgo/installer_linux
-chmod +x ./installer_linux
-./installer_linux
-source ~/.bash_profile
+wget https://dl.google.com/go/go1.21.0.linux-amd64.tar.gz
+rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+go version
+# wget https://storage.googleapis.com/golang/getgo/installer_linux
+# chmod +x ./installer_linux
+# ./installer_linux
+# source ~/.bash_profile
 
 git clone https://github.com/Mirantis/cri-dockerd.git
 cd cri-dockerd
@@ -85,7 +89,7 @@ systemctl enable --now cri-docker.socket
 * Refer here for commands to install kubeadm,kubctl,kubelet url@https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 * Run these commands as root user `sudo apt-get update
 * sudo apt-get install -y apt-transport-https ca-certificates curl`
-* `sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg`
+* `sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://dl.k8s.io/apt/doc/apt-key.gpg`
 * `echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list`
 * `sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl

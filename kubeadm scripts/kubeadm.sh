@@ -2,11 +2,15 @@
 apt-get update
 curl -fsSL https://get.docker.com -o get-docker.sh
 sh get-docker.sh
-sudo usermod -aG docker ubuntu 
-wget https://storage.googleapis.com/golang/getgo/installer_linux
-chmod +x ./installer_linux
-./installer_linux
-source ~/.bash_profile
+sudo usermod -aG docker ubuntu
+wget https://dl.google.com/go/go1.21.0.linux-amd64.tar.gz
+rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+go version
+# wget https://storage.googleapis.com/golang/getgo/installer_linux
+# chmod +x ./installer_linux
+# ./installer_linux
+# source ~/.bash_profile
 git clone https://github.com/Mirantis/cri-dockerd.git
 cd cri-dockerd
 mkdir bin
@@ -46,3 +50,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
   kubeadm join 172.31.16.128:6443 --token lcmvhw.akp86bq4yqevj9ws \
         --cri-socket unix:///var/run/cri-dockerd.sock \
         --discovery-token-ca-cert-hash sha256:bc820b61db57d2d7089538ca3c985be5bad34aa73508d83f59a4a17c66bff919
+
+kubeadm join 172.31.54.131:6443 --token 92s4o1.pzmlohqgxg2m40rb \
+        --cri-socket unix:///var/run/cri-dockerd.sock \
+        --discovery-token-ca-cert-hash sha256:b33f364f135f84b9c5f937b1ac3ff88a95d9fa41286e71a18b1d2c779df9fd83
